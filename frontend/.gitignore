@@ -1,0 +1,12 @@
+# Dependencies
+node_modules
+
+# Production
+dist
+
+# Environment variables
+.env
+.env.local
+
+# Misc
+.DS_Store
