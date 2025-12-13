@@ -111,7 +111,34 @@ body {
   transform: scale(0.96);
 }
 
+/* Disclaimer Footer */
+.disclaimer-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 8px 16px;
+  text-align: center;
+  z-index: 998;
+}
+
+.disclaimer-footer p {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  line-height: 1.4;
+}
+
 @media (max-width: 768px) {
+  .disclaimer-footer p {
+    font-size: 0.7rem;
+    padding: 0 4px;
+  }
+  
   .chatbot-popup {
     bottom: 80px;
     right: 10px;
@@ -121,10 +148,19 @@ body {
   }
   
   .chatbot-toggle {
-    bottom: 10px;
+    bottom: 40px;
     right: 10px;
     width: 50px;
     height: 50px;
     font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .chatbot-popup {
+    bottom: 94px;
+    right: 24px;
+    left: auto;
+    width: 420px;
   }
 }
