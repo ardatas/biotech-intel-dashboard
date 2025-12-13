@@ -31,32 +31,6 @@ A real-time dashboard for tracking biotech company stock data and AI-powered ins
 - Yahoo Finance API
 - Google Gemini AI
 
-## Local Development
-
-**Backend:**
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Environment Variables
-
-**Backend:**
-- `GEMINI_API_KEY` - Your Google Gemini API key
-- `FRONTEND_URL` - Your frontend URL (for CORS)
-- `AI_ENABLED` - Enable/disable AI features (default: true)
-
-**Frontend:**
-- `VITE_API_URL` - Your backend API URL
-
 ## License
 
 MIT

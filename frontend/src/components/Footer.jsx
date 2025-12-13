@@ -23,6 +23,10 @@ function Footer() {
           <span className="footer-text">Data updated periodically</span>
         </div>
       </div>
+      
+      <div className="footer-disclaimer">
+        <p>⚠️ This application is for informational and educational purposes only. Not financial advice. Consult a qualified financial advisor before making investment decisions.</p>
+      </div>
     </footer>
   )
 }

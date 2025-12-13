@@ -29,11 +29,6 @@ function App() {
       >
         {isChatbotOpen ? '✕' : '💬'}
       </button>
-      
-      {/* Disclaimer Footer */}
-      <footer className="disclaimer-footer">
-        <p>⚠️ This application is for informational and educational purposes only. Not financial advice.</p>
-      </footer>
     </div>
   )
 }
