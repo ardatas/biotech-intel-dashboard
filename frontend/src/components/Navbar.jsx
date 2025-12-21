@@ -5,7 +5,7 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <h1>🧬 Biotech Intelligence Dashboard</h1>
+        <h1>📊 Market Intelligence Platform</h1>
       </div>
       <div className="navbar-menu">
         <a href="#deals">Deals</a>

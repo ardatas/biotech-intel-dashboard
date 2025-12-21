@@ -20,20 +20,15 @@ function RecentNews() {
       setLoading(true)
       setError(null)
 
-      // Fetch recent and past news in parallel
-      const [recentResponse, pastResponse] = await Promise.all([
-        fetch(`${API_URL}/news/recent`),
-        fetch(`${API_URL}/news/past`)
-      ])
+      // Fetch market news from new endpoint
+      const response = await fetch(`${API_URL}/market/news`)
+      const data = await response.json()
 
-      const recentData = await recentResponse.json()
-      const pastData = await pastResponse.json()
-
-      if (recentData.success) {
-        setRecentNews(recentData.data)
-      }
-      if (pastData.success) {
-        setPastNews(pastData.data)
+      if (data.success) {
+        // Split news into recent (first 10) and past (remaining)
+        const allNews = data.data
+        setRecentNews(allNews.slice(0, 10))
+        setPastNews(allNews.slice(10))
       }
     } catch (err) {
       console.error('Error fetching news:', err)

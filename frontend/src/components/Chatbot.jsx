@@ -62,7 +62,7 @@ function Chatbot({ onClose }) {
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="empty-state">
-            <p>Ask me anything about biotech investments!</p>
+            <p>Ask me anything about stock market and investments!</p>
           </div>
         ) : (
           messages.map((msg, index) => (

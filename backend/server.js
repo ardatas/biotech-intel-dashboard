@@ -3,7 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { fetchBiotechCompanies, fetchQuote, fetchNews } from './yahoo.js'
+import { fetchQuote, fetchNews } from './yahoo.js'
 import { getTrendingStocks, getMarketNews, getStockIntelligence } from './services/market.js'
 import { fetchSubredditPosts } from './services/reddit.js'
 
@@ -47,33 +47,6 @@ const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running!' })
-})
-
-// GET /biotech - Returns real biotech company data from Yahoo Finance API
-app.get('/biotech', async (req, res) => {
-  try {
-    console.log('Fetching biotech companies from Yahoo Finance...')
-    
-    // Fetch real data from Yahoo Finance (no API key needed!)
-    const result = await fetchBiotechCompanies()
-    
-    res.json({
-      success: true,
-      total: result.total,
-      companies: result.companies,
-      sectors: result.sectors,
-      industries: result.industries,
-      source: 'yahoo_finance'
-    })
-
-  } catch (error) {
-    console.error('Error fetching biotech companies:', error.message)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch biotech companies',
-      details: error.message
-    })
-  }
 })
 
 // GET /quote?symbol=XYZ - Returns detailed quote data for a stock
@@ -150,104 +123,8 @@ app.get('/news', async (req, res) => {
   }
 })
 
-// GET /news/recent - Returns aggregated recent news from top biotech companies
-app.get('/news/recent', async (req, res) => {
-  try {
-    console.log('Fetching recent news from top biotech companies...')
-    
-    // Top biotech symbols to fetch news from
-    const symbols = ['MRNA', 'BNTX', 'GILD', 'VRTX', 'REGN']
-    
-    // Fetch news for each symbol
-    const newsPromises = symbols.map(symbol => 
-      fetchNews(symbol).catch(err => {
-        console.error(`Failed to fetch news for ${symbol}:`, err.message)
-        return []
-      })
-    )
-    
-    const newsArrays = await Promise.all(newsPromises)
-    
-    // Flatten and add company symbol to each article
-    const allNews = newsArrays.flatMap((news, index) => 
-      news.slice(0, 3).map(article => ({
-        title: article.title,
-        summary: article.summary || 'No summary available',
-        link: article.link,
-        publishedAt: article.publishedAt,
-        source: article.publisher,
-        companySymbol: symbols[index],
-        thumbnail: article.thumbnail
-      }))
-    )
-    
-    // Sort by date (most recent first)
-    allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    
-    res.json({
-      success: true,
-      data: allNews.slice(0, 10), // Return top 10 most recent
-      source: 'yahoo_finance'
-    })
-    
-  } catch (error) {
-    console.error('Error fetching recent news:', error.message)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch recent news',
-      details: error.message
-    })
-  }
-})
-
-// GET /news/past - Returns older news from biotech companies
-app.get('/news/past', async (req, res) => {
-  try {
-    console.log('Fetching past news from biotech companies...')
-    
-    const symbols = ['BIIB', 'AMGN', 'BLUE', 'CRSP', 'EDIT']
-    
-    const newsPromises = symbols.map(symbol => 
-      fetchNews(symbol).catch(err => {
-        console.error(`Failed to fetch news for ${symbol}:`, err.message)
-        return []
-      })
-    )
-    
-    const newsArrays = await Promise.all(newsPromises)
-    
-    const allNews = newsArrays.flatMap((news, index) => 
-      news.slice(0, 2).map(article => ({
-        title: article.title,
-        summary: article.summary || 'No summary available',
-        link: article.link,
-        publishedAt: article.publishedAt,
-        source: article.publisher,
-        companySymbol: symbols[index],
-        thumbnail: article.thumbnail
-      }))
-    )
-    
-    allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    
-    res.json({
-      success: true,
-      data: allNews,
-      source: 'yahoo_finance'
-    })
-    
-  } catch (error) {
-    console.error('Error fetching past news:', error.message)
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch past news',
-      details: error.message
-    })
-  }
-})
-
 // ========================================
-// NEW MARKET INTELLIGENCE ENDPOINTS
+// MARKET INTELLIGENCE ENDPOINTS
 // ========================================
 
 // GET /market/trending - Returns trending stocks from Reddit + market data
