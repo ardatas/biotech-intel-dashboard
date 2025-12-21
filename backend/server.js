@@ -126,6 +126,102 @@ app.get('/news', async (req, res) => {
   }
 })
 
+// GET /news/recent - Returns aggregated recent news from top biotech companies
+app.get('/news/recent', async (req, res) => {
+  try {
+    console.log('Fetching recent news from top biotech companies...')
+    
+    // Top biotech symbols to fetch news from
+    const symbols = ['MRNA', 'BNTX', 'GILD', 'VRTX', 'REGN']
+    
+    // Fetch news for each symbol
+    const newsPromises = symbols.map(symbol => 
+      fetchNews(symbol).catch(err => {
+        console.error(`Failed to fetch news for ${symbol}:`, err.message)
+        return []
+      })
+    )
+    
+    const newsArrays = await Promise.all(newsPromises)
+    
+    // Flatten and add company symbol to each article
+    const allNews = newsArrays.flatMap((news, index) => 
+      news.slice(0, 3).map(article => ({
+        title: article.title,
+        summary: article.summary || 'No summary available',
+        link: article.link,
+        publishedAt: article.publishedAt,
+        source: article.publisher,
+        companySymbol: symbols[index],
+        thumbnail: article.thumbnail
+      }))
+    )
+    
+    // Sort by date (most recent first)
+    allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    
+    res.json({
+      success: true,
+      data: allNews.slice(0, 10), // Return top 10 most recent
+      source: 'yahoo_finance'
+    })
+    
+  } catch (error) {
+    console.error('Error fetching recent news:', error.message)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch recent news',
+      details: error.message
+    })
+  }
+})
+
+// GET /news/past - Returns older news from biotech companies
+app.get('/news/past', async (req, res) => {
+  try {
+    console.log('Fetching past news from biotech companies...')
+    
+    const symbols = ['BIIB', 'AMGN', 'BLUE', 'CRSP', 'EDIT']
+    
+    const newsPromises = symbols.map(symbol => 
+      fetchNews(symbol).catch(err => {
+        console.error(`Failed to fetch news for ${symbol}:`, err.message)
+        return []
+      })
+    )
+    
+    const newsArrays = await Promise.all(newsPromises)
+    
+    const allNews = newsArrays.flatMap((news, index) => 
+      news.slice(0, 2).map(article => ({
+        title: article.title,
+        summary: article.summary || 'No summary available',
+        link: article.link,
+        publishedAt: article.publishedAt,
+        source: article.publisher,
+        companySymbol: symbols[index],
+        thumbnail: article.thumbnail
+      }))
+    )
+    
+    allNews.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+    
+    res.json({
+      success: true,
+      data: allNews,
+      source: 'yahoo_finance'
+    })
+    
+  } catch (error) {
+    console.error('Error fetching past news:', error.message)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch past news',
+      details: error.message
+    })
+  }
+})
+
 // POST /ask - Forwards message to Gemini API and returns response
 app.post('/ask', async (req, res) => {
   try {
