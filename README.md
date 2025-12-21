@@ -13,11 +13,6 @@ A real-time dashboard for tracking biotech company stock data and AI-powered ins
 - AI-powered insights (powered by Google Gemini)
 - Responsive dashboard interface
 
-## Live Demo
-
-- Frontend: https://biotech-intel-dashboard-6f7u.vercel.app
-- Backend API: https://biotech-intel-dashboard.vercel.app
-
 ## Tech Stack
 
 **Frontend:**
