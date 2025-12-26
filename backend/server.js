@@ -2,6 +2,8 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
+import NodeCache from 'node-cache'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { fetchQuote, fetchNews } from './yahoo.js'
 import { getTrendingStocks, getMarketNews, getStockIntelligence } from './services/market.js'
@@ -11,6 +13,12 @@ dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+
+// Daily quota tracking per IP
+const dailyQuotaCache = new NodeCache({ 
+  stdTTL: 86400, // 24 hours
+  checkperiod: 3600 // Check for expired keys every hour
+})
 
 // Rate limiting configuration
 const marketLimiter = rateLimit({
@@ -33,12 +41,57 @@ const aiLimiter = rateLimit({
   }
 })
 
-// Middleware - CORS configuration for Vercel
+// Security headers
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}))
+
+// Middleware - CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS 
+  ? process.env.ALLOWED_ORIGINS.split(',') 
+  : ['http://localhost:5173', 'http://localhost:3000']
+
 app.use(cors({
-  origin: true,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true)
+    
+    // In production, check against allowed origins
+    if (process.env.NODE_ENV === 'production') {
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    } else {
+      // In development, allow all
+      callback(null, true)
+    }
+  },
   credentials: true
 }))
-app.use(express.json())
+app.use(express.json({ limit: '100kb' })) // Limit payload size
+
+// Daily quota middleware for AI endpoints
+const dailyQuotaMiddleware = (maxDaily) => {
+  return (req, res, next) => {
+    const ip = req.ip || req.connection.remoteAddress
+    const key = `daily_${ip}`
+    
+    const current = dailyQuotaCache.get(key) || 0
+    
+    if (current >= maxDaily) {
+      return res.status(429).json({
+        success: false,
+        error: 'Daily AI quota exceeded. Please try again tomorrow.',
+        resetTime: 'Midnight PST'
+      })
+    }
+    
+    dailyQuotaCache.set(key, current + 1)
+    next()
+  }
+}
 
 // Initialize Gemini API client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
@@ -50,7 +103,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // GET /quote?symbol=XYZ - Returns detailed quote data for a stock
-app.get('/quote', async (req, res) => {
+app.get('/quote', marketLimiter, async (req, res) => {
   try {
     const { symbol } = req.query
     
@@ -81,7 +134,7 @@ app.get('/quote', async (req, res) => {
 })
 
 // GET /news?symbol=XYZ - Returns AI-summarized news for a stock
-app.get('/news', async (req, res) => {
+app.get('/news', marketLimiter, async (req, res) => {
   try {
     const { symbol } = req.query
     
@@ -226,7 +279,7 @@ app.get('/stock/:symbol', marketLimiter, async (req, res) => {
 })
 
 // POST /ask - Forwards message to Gemini API and returns response
-app.post('/ask', aiLimiter, async (req, res) => {
+app.post('/ask', aiLimiter, dailyQuotaMiddleware(100), async (req, res) => {
   try {
     const { message } = req.body
 
@@ -234,6 +287,14 @@ app.post('/ask', aiLimiter, async (req, res) => {
       return res.status(400).json({ 
         success: false,
         error: 'Message is required' 
+      })
+    }
+
+    // Limit message length
+    if (message.length > 2000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message too long. Max 2000 characters.'
       })
     }
 
@@ -257,12 +318,19 @@ app.post('/ask', aiLimiter, async (req, res) => {
 })
 
 // Legacy chat endpoint for compatibility
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', aiLimiter, dailyQuotaMiddleware(100), async (req, res) => {
   try {
     const { message } = req.body
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' })
+    }
+
+    // Limit message length
+    if (message.length > 2000) {
+      return res.status(400).json({
+        error: 'Message too long. Max 2000 characters.'
+      })
     }
 
     // Call Gemini API
