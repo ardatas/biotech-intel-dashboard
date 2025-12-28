@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
-import EnhancedDashboard from './components/EnhancedDashboard'
+import Sidebar from './components/Sidebar'
 import Chatbot from './components/Chatbot'
+import Dashboard from './pages/Dashboard'
+import Trending from './pages/Trending'
+import Discussions from './pages/Discussions'
+import News from './pages/News'
 
 function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false)
@@ -23,29 +28,39 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="app-layout">
-        <div className="main-content">
-          <EnhancedDashboard theme={theme} onThemeToggle={toggleTheme} />
+    <Router>
+      <div className="app">
+        <Sidebar />
+        
+        <div className="app-layout">
+          <div className="main-content">
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/trending" element={<Trending />} />
+              <Route path="/discussions" element={<Discussions />} />
+              <Route path="/news" element={<News />} />
+            </Routes>
+          </div>
         </div>
+        
+        {/* Floating Chatbot Popup */}
+        {isChatbotOpen && (
+          <div className="chatbot-popup">
+            <Chatbot onClose={() => setIsChatbotOpen(false)} />
+          </div>
+        )}
+        
+        {/* Chatbot Toggle Button */}
+        <button 
+          className="chatbot-toggle"
+          onClick={() => setIsChatbotOpen(!isChatbotOpen)}
+          aria-label="Toggle AI Assistant"
+        >
+          {isChatbotOpen ? '✕' : '💬'}
+        </button>
       </div>
-      
-      {/* Floating Chatbot Popup */}
-      {isChatbotOpen && (
-        <div className="chatbot-popup">
-          <Chatbot onClose={() => setIsChatbotOpen(false)} />
-        </div>
-      )}
-      
-      {/* Chatbot Toggle Button */}
-      <button 
-        className="chatbot-toggle"
-        onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-        aria-label="Toggle AI Assistant"
-      >
-        {isChatbotOpen ? '✕' : '💬'}
-      </button>
-    </div>
+    </Router>
   )
 }
 

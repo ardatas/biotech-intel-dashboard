@@ -1,62 +1,45 @@
 import React from 'react'
+import { NavLink } from 'react-router-dom'
 import './Sidebar.css'
 
-function Sidebar({ filters, setFilters }) {
+function Sidebar() {
   return (
-    <aside className="sidebar">
-      <h2>Filters</h2>
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <h2>📊 Market Intel</h2>
+      </div>
       
-      <div className="filter-group">
-        <label>Search</label>
-        <input
-          type="text"
-          placeholder="Search companies..."
-          value={filters.searchTerm}
-          onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-        />
+      <nav className="sidebar-nav">
+        <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span className="nav-icon">📈</span>
+          <span className="nav-label">Dashboard</span>
+        </NavLink>
+        
+        <NavLink to="/trending" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span className="nav-icon">🔥</span>
+          <span className="nav-label">Trending</span>
+        </NavLink>
+        
+        <NavLink to="/discussions" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span className="nav-icon">💬</span>
+          <span className="nav-label">Discussions</span>
+        </NavLink>
+        
+        <NavLink to="/news" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span className="nav-icon">📰</span>
+          <span className="nav-label">News</span>
+        </NavLink>
+      </nav>
+      
+      <div className="sidebar-footer">
+        <div className="user-section">
+          <div className="user-avatar">👤</div>
+          <div className="user-info">
+            <span className="user-name">Guest User</span>
+          </div>
+        </div>
       </div>
-
-      <div className="filter-group">
-        <label>Investment Stage</label>
-        <select
-          value={filters.stage}
-          onChange={(e) => setFilters({ ...filters, stage: e.target.value })}
-        >
-          <option value="all">All Stages</option>
-          <option value="Seed">Seed</option>
-          <option value="Series A">Series A</option>
-          <option value="Series B">Series B</option>
-          <option value="Series C">Series C</option>
-          <option value="Acquired">Acquired</option>
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <label>Sector</label>
-        <select
-          value={filters.sector}
-          onChange={(e) => setFilters({ ...filters, sector: e.target.value })}
-        >
-          <option value="all">All Sectors</option>
-          <option value="Oncology">Oncology</option>
-          <option value="Neuroscience">Neuroscience</option>
-          <option value="Gene Therapy">Gene Therapy</option>
-          <option value="Immunology">Immunology</option>
-          <option value="Cell Therapy">Cell Therapy</option>
-          <option value="Bioinformatics">Bioinformatics</option>
-          <option value="Regenerative Medicine">Regenerative Medicine</option>
-          <option value="Genomics">Genomics</option>
-          <option value="Microbiome">Microbiome</option>
-        </select>
-      </div>
-
-      <button
-        className="reset-button"
-        onClick={() => setFilters({ stage: 'all', sector: 'all', searchTerm: '' })}
-      >
-        Reset Filters
-      </button>
-    </aside>
+    </div>
   )
 }
 

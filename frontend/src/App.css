@@ -33,6 +33,7 @@ body {
 }
 
 .app-layout {
+  margin-left: 250px; /* Width of sidebar */
   min-height: 100vh;
   position: relative;
   z-index: 1;
@@ -41,6 +42,13 @@ body {
 .main-content {
   width: 100%;
   overflow-y: auto;
+}
+
+/* Responsive sidebar spacing */
+@media (max-width: 768px) {
+  .app-layout {
+    margin-left: 70px; /* Collapsed sidebar width */
+  }
 }
 
 /* Floating Chatbot Popup */
