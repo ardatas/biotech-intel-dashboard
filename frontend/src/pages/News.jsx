@@ -1,10 +1,10 @@
 import React from 'react'
+import RecentNews from '../components/RecentNews'
 
 function News() {
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>News Page</h1>
-      <p>This is the News page - content coming soon</p>
+    <div>
+      <RecentNews />
     </div>
   )
 }
